@@ -1,0 +1,101 @@
+# ---------------------------------------------------------------
+# Secretos y variables de entorno
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+Token para claude.txt
+
+# ---------------------------------------------------------------
+# Python / FastAPI
+# ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Empaquetado
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# Tests, cobertura y herramientas
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.hypothesis/
+
+# Bases de datos locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------
+# Node.js / Next.js
+# ---------------------------------------------------------------
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+.next/
+out/
+.vercel
+.turbo
+*.tsbuildinfo
+next-env.d.ts
+
+coverage/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------
+logs/
+*.log
+
+# ---------------------------------------------------------------
+# Editores y sistema operativo
+# ---------------------------------------------------------------
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------
+# Claude Code (configuración local personal)
+# ---------------------------------------------------------------
+.claude/settings.local.json
