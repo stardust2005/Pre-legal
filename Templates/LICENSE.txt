@@ -1,0 +1,37 @@
+Licencia de las plantillas / Templates license
+==============================================
+
+Todo el contenido de este directorio (Templates/) se distribuye bajo la licencia
+Creative Commons Atribución 4.0 Internacional (CC BY 4.0).
+
+All content in this directory (Templates/) is licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+Texto de la licencia / License text:
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+Atribución / Attribution
+------------------------
+Las plantillas son los acuerdos estándar de Common Paper (https://commonpaper.com),
+obtenidos de sus repositorios públicos en GitHub (https://github.com/CommonPaper):
+
+- AI-Addendum.md                 <- https://github.com/CommonPaper/AI-Addendum
+- BAA.md                         <- https://github.com/CommonPaper/BAA
+- CSA.md                         <- https://github.com/CommonPaper/CSA
+- design-partner-agreement.md    <- https://github.com/CommonPaper/Design-Partner-Agreement
+- DPA.md                         <- https://github.com/CommonPaper/DPA
+- Mutual-NDA.md                  <- https://github.com/CommonPaper/Mutual-NDA
+- Mutual-NDA-coverpage.md        <- https://github.com/CommonPaper/Mutual-NDA
+- Partnership-Agreement.md       <- https://github.com/CommonPaper/Partnership-Agreement
+- Pilot-Agreement.md             <- https://github.com/CommonPaper/Pilot-Agreement
+- psa.md                         <- https://github.com/CommonPaper/PSA
+- sla.md                         <- https://github.com/CommonPaper/SLA
+- Software-License-Agreement.md  <- https://github.com/CommonPaper/Software-License-Agreement
+
+Los archivos se han copiado sin modificaciones. Cualquier versión modificada que
+genere este proyecto a partir de ellos debe indicar que se han realizado cambios
+y mantener esta atribución, según exige la licencia CC BY 4.0.
+
+The files were copied without modification. Any modified version produced by this
+project from them must indicate that changes were made and retain this attribution,
+as required by CC BY 4.0.
