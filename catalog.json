@@ -13,6 +13,14 @@
           "name": "Acuerdo Mutuo de Confidencialidad (Términos Estándar)",
           "filename": "es/Mutual-NDA.md"
         }
+      },
+      "cover_page": {
+        "filename": "Mutual-NDA-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/Mutual-NDA-coverpage.md"
+          }
+        }
       }
     },
     {
@@ -35,6 +43,14 @@
           "name": "Acuerdo de Servicio en la Nube",
           "filename": "es/CSA.md"
         }
+      },
+      "cover_page": {
+        "filename": "CSA-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/CSA-coverpage.md"
+          }
+        }
       }
     },
     {
@@ -45,6 +61,14 @@
         "es": {
           "name": "Acuerdo de Nivel de Servicio",
           "filename": "es/sla.md"
+        }
+      },
+      "cover_page": {
+        "filename": "sla-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/sla-coverpage.md"
+          }
         }
       }
     },
@@ -57,6 +81,14 @@
           "name": "Acuerdo de Tratamiento de Datos",
           "filename": "es/DPA.md"
         }
+      },
+      "cover_page": {
+        "filename": "DPA-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/DPA-coverpage.md"
+          }
+        }
       }
     },
     {
@@ -67,6 +99,14 @@
         "es": {
           "name": "Acuerdo de Socio de Diseño",
           "filename": "es/design-partner-agreement.md"
+        }
+      },
+      "cover_page": {
+        "filename": "design-partner-agreement-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/design-partner-agreement-coverpage.md"
+          }
         }
       }
     },
@@ -79,6 +119,14 @@
           "name": "Acuerdo de Servicios Profesionales",
           "filename": "es/psa.md"
         }
+      },
+      "cover_page": {
+        "filename": "psa-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/psa-coverpage.md"
+          }
+        }
       }
     },
     {
@@ -89,6 +137,14 @@
         "es": {
           "name": "Acuerdo de Colaboración",
           "filename": "es/Partnership-Agreement.md"
+        }
+      },
+      "cover_page": {
+        "filename": "Partnership-Agreement-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/Partnership-Agreement-coverpage.md"
+          }
         }
       }
     },
@@ -101,6 +157,14 @@
           "name": "Acuerdo de Socio Comercial",
           "filename": "es/BAA.md"
         }
+      },
+      "cover_page": {
+        "filename": "BAA-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/BAA-coverpage.md"
+          }
+        }
       }
     },
     {
@@ -111,6 +175,14 @@
         "es": {
           "name": "Acuerdo de Licencia de Software",
           "filename": "es/Software-License-Agreement.md"
+        }
+      },
+      "cover_page": {
+        "filename": "Software-License-Agreement-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/Software-License-Agreement-coverpage.md"
+          }
         }
       }
     },
@@ -123,6 +195,14 @@
           "name": "Acuerdo Piloto",
           "filename": "es/Pilot-Agreement.md"
         }
+      },
+      "cover_page": {
+        "filename": "Pilot-Agreement-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/Pilot-Agreement-coverpage.md"
+          }
+        }
       }
     },
     {
@@ -133,6 +213,14 @@
         "es": {
           "name": "Anexo de IA",
           "filename": "es/AI-Addendum.md"
+        }
+      },
+      "cover_page": {
+        "filename": "AI-Addendum-coverpage.md",
+        "translations": {
+          "es": {
+            "filename": "es/AI-Addendum-coverpage.md"
+          }
         }
       }
     }
