@@ -10,7 +10,8 @@ Repositorio para proyecto de documentos legales comunes
 | Ruta | Contenido |
 |---|---|
 | `Templates/` | Plantillas de acuerdos legales en markdown, de [Common Paper](https://github.com/CommonPaper), bajo licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (ver `Templates/LICENSE.txt`). |
-| `catalog.json` | Catálogo de las plantillas: nombre, descripción y fichero de cada una. |
+| `Templates/es/` | Traducciones no oficiales al español de las plantillas y glosario de términos (`GLOSARIO.md`). |
+| `catalog.json` | Catálogo de las plantillas: nombre, descripción y fichero de cada una, con su traducción al español. |
 | `frontend/` | Web de Pre-Legal en Next.js: presentación de la empresa y catálogo de plantillas. Ver [`frontend/README.md`](frontend/README.md). |
 
 ## Puesta en marcha

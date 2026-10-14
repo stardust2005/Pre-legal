@@ -28,10 +28,27 @@ obtenidos de sus repositorios públicos en GitHub (https://github.com/CommonPape
 - sla.md                         <- https://github.com/CommonPaper/SLA
 - Software-License-Agreement.md  <- https://github.com/CommonPaper/Software-License-Agreement
 
-Los archivos se han copiado sin modificaciones. Cualquier versión modificada que
-genere este proyecto a partir de ellos debe indicar que se han realizado cambios
-y mantener esta atribución, según exige la licencia CC BY 4.0.
+Los archivos de la raíz de Templates/ se han copiado sin modificaciones. Cualquier
+versión modificada que genere este proyecto a partir de ellos debe indicar que se
+han realizado cambios y mantener esta atribución, según exige la licencia CC BY 4.0.
 
-The files were copied without modification. Any modified version produced by this
-project from them must indicate that changes were made and retain this attribution,
-as required by CC BY 4.0.
+The files at the root of Templates/ were copied without modification. Any modified
+version produced by this project from them must indicate that changes were made and
+retain this attribution, as required by CC BY 4.0.
+
+Traducciones al español / Spanish translations
+----------------------------------------------
+El directorio Templates/es/ contiene traducciones no oficiales al español de las
+plantillas anteriores, realizadas por Pre-Legal. Son obras derivadas: el texto ha
+sido modificado respecto al original (traducción), se distribuyen también bajo
+CC BY 4.0 y mantienen la atribución a Common Paper. Cada traducción lo indica al
+principio del documento. No son traducciones oficiales de Common Paper ni adaptan
+los acuerdos al derecho español. Templates/es/GLOSARIO.md recoge los criterios y
+términos usados.
+
+The Templates/es/ directory contains unofficial Spanish translations of the
+templates above, made by Pre-Legal. They are adapted material: the text has been
+modified from the original (translation), they are also licensed under CC BY 4.0
+and retain the attribution to Common Paper. Each translation says so at the top.
+They are not official Common Paper translations and do not adapt the agreements
+to Spanish law.
