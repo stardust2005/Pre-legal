@@ -33,7 +33,7 @@ export default async function TemplatesCatalog() {
               className="block h-full rounded-lg border border-black/10 p-5 transition-colors hover:border-black/30 hover:bg-black/[.03] dark:border-white/15 dark:hover:border-white/40 dark:hover:bg-white/[.05]"
             >
               <h2 className="font-medium">{template.displayName}</h2>
-              {fillSlugFor(template.slug) && (
+              {fillSlugFor(template) && (
                 <span className="mt-2 inline-block rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium dark:bg-white/10">
                   Se puede rellenar
                 </span>

@@ -49,12 +49,12 @@ body {
 }
 
 /* Vista previa del formulario (PL-4): campo con valor y campo pendiente. */
-.coverpage_link.filled {
+.filled {
   background: var(--filled);
   color: var(--filled-foreground);
 }
 
-.coverpage_link.pending {
+.pending {
   outline: 1px dashed currentColor;
 }
 

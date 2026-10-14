@@ -13,7 +13,7 @@ type Props = {
 };
 
 export function TemplateView({ template, content, language, translated }: Props) {
-  const fillSlug = fillSlugFor(template.slug);
+  const fillSlug = fillSlugFor(template);
   const otherLink =
     language === "es"
       ? translated && { href: `/plantillas/${template.slug}/original`, label: "Ver el original en inglés" }

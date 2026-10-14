@@ -1,9 +1,9 @@
-// Plantillas que ya se pueden rellenar (PL-4). El resto llegará con PL-6.
-// Clave: slug de la página del formulario. Valor: slugs del catálogo que enlazan a él.
-export const FILLABLE: Record<string, string[]> = {
-  "mutual-nda": ["mutual-nda", "mutual-nda-coverpage"],
-};
+import type { Template } from "@/lib/templates";
 
-export function fillSlugFor(templateSlug: string): string | undefined {
-  return Object.entries(FILLABLE).find(([, slugs]) => slugs.includes(templateSlug))?.[0];
+// Plantillas que se pueden rellenar (PL-4): todas las que tienen Portada (PL-6).
+// El Mutual NDA usa su formulario específico; su Portada, que es una entrada
+// propia del catálogo, enlaza al mismo formulario.
+export function fillSlugFor(template: Template): string | undefined {
+  if (template.slug === "mutual-nda-coverpage") return "mutual-nda";
+  return template.cover_page ? template.slug : undefined;
 }
