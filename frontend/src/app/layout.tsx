@@ -14,10 +14,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pre-Legal · Plantillas legales",
+  title: "Pre-Legal · Documentos legales comunes, sin complicaciones",
   description:
-    "Catálogo de plantillas de documentos legales de Common Paper que Pre-Legal podrá adaptar para cada usuario.",
+    "Pre-Legal ayuda a empresas y profesionales a preparar documentos legales comunes a partir de plantillas estándar y abiertas.",
 };
+
+const NAV_LINKS = [
+  { href: "/", label: "Inicio" },
+  { href: "/plantillas", label: "Plantillas" },
+];
 
 export default function RootLayout({
   children,
@@ -34,9 +39,17 @@ export default function RootLayout({
             <Link href="/" className="text-lg font-semibold tracking-tight">
               Pre-Legal
             </Link>
-            <span className="text-sm text-foreground/60">
-              Plantillas de documentos legales
-            </span>
+            <nav className="flex gap-6 text-sm">
+              {NAV_LINKS.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="text-foreground/70 hover:text-foreground"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </header>
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">

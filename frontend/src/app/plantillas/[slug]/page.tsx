@@ -41,7 +41,7 @@ export default async function TemplatePage({ params }: Props) {
   return (
     <>
       <Link
-        href="/"
+        href="/plantillas"
         className="text-sm text-foreground/60 hover:text-foreground"
       >
         ← Volver al catálogo
