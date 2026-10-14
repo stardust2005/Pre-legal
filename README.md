@@ -16,7 +16,7 @@ Repositorio para proyecto de documentos legales comunes
 
 ## Puesta en marcha
 
-Requisitos: Node.js 20 o superior.
+Requisitos: Node.js 20.9 o superior (lo exige Next.js 16).
 
 ```bash
 cd frontend

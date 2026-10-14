@@ -11,7 +11,7 @@
   "dependencies": {
     "@react-pdf/renderer": "4.3.0",
     "@tailwindcss/typography": "^0.5.16",
-    "next": "15.5.4",
+    "next": "16.4.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-markdown": "^10.1.0",
@@ -21,15 +21,19 @@
     "unified": "11.0.5"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/mdast": "4.0.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.4",
+    "eslint-config-next": "16.4.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@tailwindcss/typography": {
+      "postcss-selector-parser": "7.1.6"
+    }
   }
 }
