@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DOCUMENT_LANGUAGE } from "@/lib/document-language";
 import { fillSlugFor } from "@/lib/forms";
 import { getTemplates } from "@/lib/templates";
 
@@ -20,7 +21,9 @@ export default async function TemplatesCatalog() {
         </h1>
         <p className="mt-3 max-w-2xl text-foreground/70">
           {templates.length} plantillas de acuerdos legales estándar listas para
-          consultar, traducidas al español. Las marcadas como «Se puede rellenar»
+          consultar,{" "}
+          {DOCUMENT_LANGUAGE === "es" ? "traducidas al español" : "en su versión original en inglés"}.
+          Las marcadas como «Se puede rellenar»
           tienen formulario para generar el documento en PDF con tus datos.
         </p>
       </section>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TemplateView } from "@/components/TemplateView";
+import { DOCUMENT_LANGUAGE } from "@/lib/document-language";
 import {
   getTemplate,
   getTemplateContent,
@@ -14,8 +15,10 @@ type Props = {
 
 export const dynamicParams = false;
 
-// Solo las plantillas traducidas necesitan una página aparte para el original.
+// Solo las plantillas traducidas necesitan una página aparte para el original; con los
+// documentos en inglés (PL-8), la página de la plantilla ya muestra el original.
 export async function generateStaticParams() {
+  if (DOCUMENT_LANGUAGE !== "es") return [];
   const templates = await getTemplates();
   return templates.filter(hasTranslation).map(({ slug }) => ({ slug }));
 }

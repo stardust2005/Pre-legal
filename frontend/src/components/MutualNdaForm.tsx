@@ -11,6 +11,7 @@ import {
   fillStandardTerms,
   missingFields,
 } from "@/lib/forms/mutual-nda";
+import type { Language } from "@/lib/document-language";
 
 const inputClass =
   "mt-1 w-full rounded-md border border-black/15 bg-background px-3 py-2 text-sm focus:border-black/40 focus:outline-none dark:border-white/20 dark:focus:border-white/50";
@@ -88,16 +89,19 @@ function PartyFields({
   );
 }
 
-export function MutualNdaForm({ standardTerms }: { standardTerms: string }) {
-  const [values, setValues] = useState<MutualNdaValues>(defaultValues);
+export function MutualNdaForm({ standardTerms, language }: { standardTerms: string; language: Language }) {
+  const [values, setValues] = useState<MutualNdaValues>(() => defaultValues(language));
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const update = <K extends keyof MutualNdaValues>(key: K, value: MutualNdaValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }));
 
-  const preview = useMemo(() => fillStandardTerms(standardTerms, values), [standardTerms, values]);
-  const missing = missingFields(values);
+  const preview = useMemo(
+    () => fillStandardTerms(standardTerms, values, language),
+    [standardTerms, values, language],
+  );
+  const missing = missingFields(values, language);
 
   async function download() {
     setDownloading(true);
@@ -105,11 +109,11 @@ export function MutualNdaForm({ standardTerms }: { standardTerms: string }) {
     try {
       // Carga diferida: @react-pdf/renderer solo se descarga al pedir el PDF.
       const { renderMutualNdaPdf } = await import("@/lib/pdf/mutual-nda-pdf");
-      const blob = await renderMutualNdaPdf(values, standardTerms);
+      const blob = await renderMutualNdaPdf(values, standardTerms, language);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "acuerdo-mutuo-de-confidencialidad.pdf";
+      a.download = language === "es" ? "acuerdo-mutuo-de-confidencialidad.pdf" : "mutual-nda.pdf";
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

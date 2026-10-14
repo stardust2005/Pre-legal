@@ -17,12 +17,14 @@ import {
   missingFields,
   parseCover,
 } from "@/lib/forms/cover";
+import type { Language } from "@/lib/document-language";
 
 type Props = {
   title: string;
   slug: string;
   cover: string;
   standardTerms: string;
+  language: Language;
 };
 
 const inputClass =
@@ -156,8 +158,8 @@ function FormLine({
   }
 }
 
-export function CoverForm({ title, slug, cover, standardTerms }: Props) {
-  const model = useMemo(() => parseCover(cover), [cover]);
+export function CoverForm({ title, slug, cover, standardTerms, language }: Props) {
+  const model = useMemo(() => parseCover(cover, language), [cover, language]);
   const [values, setValues] = useState<CoverValues>(() => initialValues(model));
   const [tab, setTab] = useState<"cover" | "terms">("cover");
   const [downloading, setDownloading] = useState(false);
@@ -172,8 +174,8 @@ export function CoverForm({ title, slug, cover, standardTerms }: Props) {
 
   const filledCover = useMemo(() => fillCover(model, values), [model, values]);
   const filledTerms = useMemo(
-    () => fillStandardTermsFromCover(standardTerms, coverFieldValue(model, values)),
-    [standardTerms, model, values],
+    () => fillStandardTermsFromCover(standardTerms, coverFieldValue(model, values), language),
+    [standardTerms, model, values, language],
   );
   const missing = missingFields(model, values);
 
@@ -182,7 +184,7 @@ export function CoverForm({ title, slug, cover, standardTerms }: Props) {
     setError(null);
     try {
       const { renderCoverPdf } = await import("@/lib/pdf/cover-pdf");
-      const blob = await renderCoverPdf({ title, cover: filledCover, standardTerms });
+      const blob = await renderCoverPdf({ title, cover: filledCover, standardTerms, language });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

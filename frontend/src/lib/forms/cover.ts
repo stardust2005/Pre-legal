@@ -1,12 +1,17 @@
 // Formulario genérico a partir de una Portada en Markdown (PL-4 / PL-6).
 // Sin dependencias de Node: lo usan el formulario (cliente) y la generación del PDF.
 //
-// Convenciones de las portadas de Templates/es/*-coverpage.md:
+// Convenciones de las portadas (Templates/*-coverpage.md y Templates/es/*-coverpage.md):
 // - `### Campo` / `#### Campo`: secciones; el título es el nombre del campo.
 // - `[ texto ]`: dato a rellenar (desplegable si contiene opciones `a | b`).
 // - `- [ ]` / `- [x]`: opciones que se marcan o desmarcan.
-// - `> *Nota de redacción:*` y `> *Nota de Pre-Legal:*`: ayuda; no salen en el documento.
-// - Tabla con `[denominación social]` en la cabecera: firmas de las partes.
+// - `> *Drafting note:*` / `> *Nota de redacción:*` y las notas de Pre-Legal: ayuda;
+//   no salen en el documento.
+// - Tabla con `[official company name]` / `[denominación social]` en la cabecera:
+//   firmas de las partes.
+// Lo que depende del idioma de la portada está en COVER_LOCALES.
+
+import type { Language } from "@/lib/document-language";
 
 export type Segment =
   | { kind: "text"; text: string }
@@ -44,6 +49,7 @@ export type Line =
   | { kind: "sigRow"; raw: string; label: string; key?: PartyKey };
 
 export type CoverModel = {
+  language: Language;
   lines: Line[];
   fields: Record<string, Field>;
   roles: string[];
@@ -58,16 +64,63 @@ export type CoverValues = {
 };
 
 const PLACEHOLDER = /\[([^[\]\n]*)\](?!\()/g;
-const DEFAULT_ROLES = ["Proveedor", "Cliente"];
+
+type CoverLocale = {
+  // Indicaciones para quien redacta, que no son datos («[ select if…: ]»).
+  instruction: RegExp;
+  // Prefijo de los desplegables («Pick one: a | b»).
+  optionsPrefix: RegExp;
+  // Textos largos que piden un dato en lugar de proponer una redacción.
+  request: RegExp;
+  note: RegExp;
+  translationBanner?: string;
+  signatureMarker: string;
+  partyRows: Record<PartyKey, string>;
+  defaultRoles: string[];
+  // Texto del documento para los datos que faltan: «[Pending: …]».
+  pending: string;
+  companyName: string;
+  addressField: string;
+  fallbackField: string;
+};
+
+export const COVER_LOCALES: Record<Language, CoverLocale> = {
+  en: {
+    instruction: /^\s*(select if|for example)/i,
+    optionsPrefix: /^\s*(pick|choose|select)[^:]*:\s*/i,
+    request:
+      /^(fill in|enter|insert|describe|description|attach|define|list|select|if required|free text|text box|open text|small paragraph)/i,
+    note: /^>\s*\*(Drafting note|Pre-Legal note):\*\s*(.*)$/,
+    signatureMarker: "[official company name]",
+    partyRows: { name: "Print Name", title: "Title", address: "Notice Address" },
+    defaultRoles: ["Provider", "Customer"],
+    pending: "Pending",
+    companyName: "official company name",
+    addressField: "Notice Address",
+    fallbackField: "details",
+  },
+  es: {
+    instruction: /^\s*(seleccionar|por ejemplo)/i,
+    optionsPrefix: /^\s*elegir[^:]*:\s*/i,
+    request: /^(indicar|describir|descripción|adjuntar|definir|cuadro|breve|texto libre|si lo exige)/i,
+    note: /^>\s*\*(Nota de redacción|Nota de Pre-Legal):\*\s*(.*)$/,
+    translationBanner: "> **Traducción no oficial",
+    signatureMarker: "[denominación social]",
+    partyRows: { name: "Nombre", title: "Cargo", address: "Dirección" },
+    defaultRoles: ["Proveedor", "Cliente"],
+    pending: "Pendiente",
+    companyName: "denominación social",
+    addressField: "Dirección para Notificaciones",
+    fallbackField: "dato",
+  },
+};
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 const hasLetters = (s: string) => /\p{L}/u.test(s);
 
-function isInstruction(hint: string): boolean {
-  return /^\s*(seleccionar|por ejemplo)/i.test(hint) || /:\s*$/.test(hint);
-}
-
-export function parseCover(markdown: string): CoverModel {
+export function parseCover(markdown: string, language: Language): CoverModel {
+  const locale = COVER_LOCALES[language];
+  const isInstruction = (hint: string) => locale.instruction.test(hint) || /:\s*$/.test(hint);
   const lines: Line[] = [];
   const fields: Record<string, Field> = {};
   let roles: string[] = [];
@@ -87,17 +140,15 @@ export function parseCover(markdown: string): CoverModel {
         const id = `f${n++}`;
         const options = hint.includes("|")
           ? hint
-              .replace(/^\s*elegir[^:]*:\s*/i, "")
+              .replace(locale.optionsPrefix, "")
               .split("|")
               .map((o) => o.trim())
               .filter(Boolean)
           : undefined;
         // Textos largos entre corchetes: si son una propuesta de redacción se ofrecen ya
-        // escritos; si son una indicación («indicar…», «describir…») el campo empieza vacío.
+        // escritos; si piden un dato («fill in…», «describe…») el campo empieza vacío.
         const long = !options && hint.length > 60;
-        const proposal =
-          long &&
-          !/^(indicar|describir|descripción|adjuntar|definir|cuadro|breve|texto libre|si lo exige)/i.test(hint);
+        const proposal = long && !locale.request.test(hint);
         fields[id] = { id, hint, options, defaultValue: proposal ? hint : "", multiline: long, section };
         out.push({ kind: "field", id });
       }
@@ -115,9 +166,9 @@ export function parseCover(markdown: string): CoverModel {
     } else if ((m = raw.match(/^(#{1,4})\s+(.*)$/))) {
       section = m[2].trim();
       lines.push({ kind: "heading", raw, level: m[1].length, title: section });
-    } else if (raw.startsWith("> **Traducción no oficial")) {
+    } else if (locale.translationBanner && raw.startsWith(locale.translationBanner)) {
       lines.push({ kind: "translation", raw });
-    } else if ((m = raw.match(/^>\s*\*(Nota de redacción|Nota de Pre-Legal):\*\s*(.*)$/))) {
+    } else if ((m = raw.match(locale.note))) {
       lines.push({ kind: "note", raw, text: `${m[1]}: ${m[2]}` });
     } else if ((m = raw.match(/^<label>(.*)<\/label>\s*$/))) {
       lines.push({ kind: "label", raw, text: m[1] });
@@ -132,7 +183,7 @@ export function parseCover(markdown: string): CoverModel {
         defaultChecked: m[2] === "x",
         section,
       });
-    } else if (raw.startsWith("|") && raw.includes("[denominación social]")) {
+    } else if (raw.startsWith("|") && raw.includes(locale.signatureMarker)) {
       roles = raw
         .split("|")
         .map((c) => c.trim())
@@ -144,13 +195,9 @@ export function parseCover(markdown: string): CoverModel {
       lines.push({ kind: "other", raw });
     } else if (inSignature && raw.startsWith("|")) {
       const label = raw.split("|")[1].trim();
-      const key: PartyKey | undefined = label.startsWith("Nombre")
-        ? "name"
-        : label.startsWith("Cargo")
-          ? "title"
-          : label.startsWith("Dirección")
-            ? "address"
-            : undefined;
+      const key = (Object.keys(locale.partyRows) as PartyKey[]).find((k) =>
+        label.startsWith(locale.partyRows[k]),
+      );
       lines.push({ kind: "sigRow", raw, label, key });
     } else if (raw.startsWith(">")) {
       lines.push({ kind: "other", raw });
@@ -158,7 +205,7 @@ export function parseCover(markdown: string): CoverModel {
       lines.push({ kind: "text", raw, segments: segment(raw), section, table: raw.startsWith("|") });
     }
   }
-  return { lines, fields, roles: roles.length ? roles : DEFAULT_ROLES };
+  return { language, lines, fields, roles: roles.length ? roles : locale.defaultRoles };
 }
 
 export function initialValues(model: CoverModel): CoverValues {
@@ -171,12 +218,12 @@ export function initialValues(model: CoverModel): CoverValues {
   return { fields, checks, parties };
 }
 
-function pendingLabel(field: Field): string {
+function pendingLabel(field: Field, locale: CoverLocale): string {
   const base = field.options
     ? field.options.join(" | ")
     : hasLetters(field.hint) && !field.multiline
       ? field.hint
-      : field.section || "dato";
+      : field.section || locale.fallbackField;
   return base.length > 50 ? `${base.slice(0, 47)}…` : base;
 }
 
@@ -184,12 +231,13 @@ function pendingLabel(field: Field): string {
 const mdEscape = (s: string) => s.replace(/\s*\n\s*/g, " ").replace(/([\\`*_[\]<>#|])/g, "\\$1");
 
 function renderSegments(segments: Segment[], model: CoverModel, values: CoverValues): string {
+  const locale = COVER_LOCALES[model.language];
   return segments
     .map((s) => {
       if (s.kind === "text") return s.text;
       if (s.kind === "instruction") return "";
       const value = values.fields[s.id]?.trim();
-      return value ? mdEscape(value) : `[Pendiente: ${pendingLabel(model.fields[s.id])}]`;
+      return value ? mdEscape(value) : `[${locale.pending}: ${pendingLabel(model.fields[s.id], locale)}]`;
     })
     .join("")
     .replace(/ {2,}/g, " ");
@@ -197,6 +245,7 @@ function renderSegments(segments: Segment[], model: CoverModel, values: CoverVal
 
 // Portada rellenada (Markdown) para la vista previa y el PDF.
 export function fillCover(model: CoverModel, values: CoverValues): string {
+  const locale = COVER_LOCALES[model.language];
   const out: string[] = [];
   for (const line of model.lines) {
     switch (line.kind) {
@@ -218,7 +267,7 @@ export function fillCover(model: CoverModel, values: CoverValues): string {
           `|| ${model.roles
             .map((r) => {
               const company = values.parties[r]?.company.trim();
-              return `${r.toUpperCase()}: ${company ? mdEscape(company) : "[Pendiente: denominación social]"}`;
+              return `${r.toUpperCase()}: ${company ? mdEscape(company) : `[${locale.pending}: ${locale.companyName}]`}`;
             })
             .join(" | ")} |`,
         );
@@ -253,7 +302,7 @@ export function missingFields(model: CoverModel, values: CoverValues): string[] 
 }
 
 // Normaliza nombres de campo para comparar singular/plural y tildes
-// («Periodos de Suscripción» = «Periodo de Suscripción»).
+// («Periodos de Suscripción» = «Periodo de Suscripción», «Customer’s» = «Customers» = «Customer»).
 function normalize(s: string): string {
   return s
     .replace(/\((e?s)\)/g, "")
@@ -261,7 +310,7 @@ function normalize(s: string): string {
     .replace(/\p{M}/gu, "")
     .toLowerCase()
     .split(/\s+/)
-    .map((w) => w.replace(/ones$/, "on").replace(/s$/, ""))
+    .map((w) => w.replace(/['’]s$/, "").replace(/ones$/, "on").replace(/s$/, ""))
     .join(" ")
     .trim();
 }
@@ -290,7 +339,7 @@ export function coverFieldValue(model: CoverModel, values: CoverValues): (field:
     if (text.includes(":")) labelled.push(text);
   }
   const roles = new Map(model.roles.map((r) => [normalize(r), r]));
-  const addressKey = normalize("Dirección para Notificaciones");
+  const addressKey = normalize(COVER_LOCALES[model.language].addressField);
 
   return (field: string) => {
     const key = normalize(field);
@@ -316,14 +365,16 @@ const escapeHtml = (text: string) =>
 export function fillStandardTermsFromCover(
   markdown: string,
   valueOf: (field: string) => string,
+  language: Language,
 ): string {
+  const pending = `[${COVER_LOCALES[language].pending}:`;
   return markdown.replace(
     /<span class="(\w+_link)"((?: id="[^"]*")?)>([^<]+)<\/span>/g,
     (_match, cls: string, id: string, field: string) => {
       const raw = valueOf(field);
       const value = raw.length > 160 ? `${raw.slice(0, 157)}…` : raw;
       // Un valor que aún contiene datos pendientes se muestra como pendiente.
-      return value && !value.includes("[Pendiente")
+      return value && !value.includes(pending)
         ? `<span class="${cls} filled"${id} title="${escapeHtml(field)}">${escapeHtml(field)} («${escapeHtml(value)}»)</span>`
         : `<span class="${cls} pending"${id} title="Campo pendiente">${escapeHtml(field)} [pendiente]</span>`;
     },

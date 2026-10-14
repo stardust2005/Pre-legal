@@ -1,12 +1,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { DOCUMENT_LANGUAGE, type Language } from "./document-language";
+
+export type { Language };
 
 // El dataset (PL-2) vive en la raíz del repositorio, un nivel por encima de frontend/.
 const REPO_ROOT = path.join(process.cwd(), "..");
 const CATALOG_PATH = path.join(REPO_ROOT, "catalog.json");
 const TEMPLATES_DIR = path.join(REPO_ROOT, "Templates");
-
-export type Language = "es" | "en";
 
 type Translation = {
   name: string;
@@ -32,7 +33,7 @@ export type Catalog = {
 
 export type Template = CatalogEntry & {
   slug: string;
-  // Nombre en español si hay traducción; si no, el original.
+  // Nombre en el idioma de los documentos (DOCUMENT_LANGUAGE); si no hay traducción, el original.
   displayName: string;
 };
 
@@ -50,7 +51,7 @@ export async function getTemplates(): Promise<Template[]> {
   return catalog.templates.map((entry) => ({
     ...entry,
     slug: slugFromFilename(entry.filename),
-    displayName: entry.translations?.es?.name ?? entry.name,
+    displayName: (DOCUMENT_LANGUAGE === "es" && entry.translations?.es?.name) || entry.name,
   }));
 }
 
@@ -71,14 +72,18 @@ function readTemplateFile(relative: string): Promise<string> {
 
 export async function getTemplateContent(
   template: Template,
-  language: Language = "es",
+  language: Language = DOCUMENT_LANGUAGE,
 ): Promise<string> {
   const translated = language === "es" ? template.translations?.es?.filename : undefined;
   return readTemplateFile(translated ?? template.filename);
 }
 
-export async function getCoverContent(template: Template): Promise<string | undefined> {
+export async function getCoverContent(
+  template: Template,
+  language: Language = DOCUMENT_LANGUAGE,
+): Promise<string | undefined> {
   const cover = template.cover_page;
   if (!cover) return undefined;
-  return readTemplateFile(cover.translations?.es?.filename ?? cover.filename);
+  const translated = language === "es" ? cover.translations?.es?.filename : undefined;
+  return readTemplateFile(translated ?? cover.filename);
 }

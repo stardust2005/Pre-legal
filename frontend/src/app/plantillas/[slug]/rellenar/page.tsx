@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CoverForm } from "@/components/CoverForm";
 import { MutualNdaForm } from "@/components/MutualNdaForm";
+import { DOCUMENT_LANGUAGE } from "@/lib/document-language";
 import { fillSlugFor } from "@/lib/forms";
 import { getCoverContent, getTemplate, getTemplateContent, getTemplates } from "@/lib/templates";
 
@@ -29,7 +30,7 @@ export default async function FillPage({ params }: Props) {
   const template = await getTemplate(slug);
   if (!template || fillSlugFor(template) !== slug) notFound();
 
-  const standardTerms = await getTemplateContent(template, "es");
+  const standardTerms = await getTemplateContent(template);
   const cover = slug === "mutual-nda" ? undefined : await getCoverContent(template);
 
   return (
@@ -42,13 +43,20 @@ export default async function FillPage({ params }: Props) {
         <p className="mt-3 max-w-2xl text-foreground/70">
           Completa la Portada. La vista previa muestra tus datos en la Portada y dentro de los Términos
           Estándar, y el PDF descargable incluye la Portada rellenada junto con los Términos Estándar sin
-          modificar. Los datos no se guardan: solo existen en tu navegador mientras usas esta página.
+          modificar. {DOCUMENT_LANGUAGE === "en" && "El documento se genera en inglés, su idioma original. "}Los datos
+          no se guardan: solo existen en tu navegador mientras usas esta página.
         </p>
       </header>
       {cover ? (
-        <CoverForm title={template.displayName} slug={slug} cover={cover} standardTerms={standardTerms} />
+        <CoverForm
+          title={template.displayName}
+          slug={slug}
+          cover={cover}
+          standardTerms={standardTerms}
+          language={DOCUMENT_LANGUAGE}
+        />
       ) : (
-        <MutualNdaForm standardTerms={standardTerms} />
+        <MutualNdaForm standardTerms={standardTerms} language={DOCUMENT_LANGUAGE} />
       )}
     </>
   );
