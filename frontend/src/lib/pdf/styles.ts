@@ -41,5 +41,6 @@ export const styles = StyleSheet.create({
   lastRow: { flexDirection: "row" },
   cellLabel: { width: "30%", padding: 6, fontFamily: "Helvetica-Bold", fontSize: 9 },
   cell: { width: "35%", padding: 6, borderLeftWidth: 1, borderLeftColor: "#d4d4d4", minHeight: 24 },
+  rule: { borderBottomWidth: 1, borderBottomColor: "#d4d4d4", marginVertical: 14 },
   footer: { position: "absolute", bottom: 24, left: 56, right: 56, fontSize: 7.5, color: "#737373" },
 });

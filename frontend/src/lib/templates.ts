@@ -18,6 +18,8 @@ export type CatalogEntry = {
   description: string;
   filename: string;
   translations?: { es?: Translation };
+  // Portada de la plantilla (PL-6); la del Mutual NDA es también una entrada propia.
+  cover_page?: { filename: string; translations?: { es?: { filename: string } } };
 };
 
 export type Catalog = {
@@ -61,13 +63,22 @@ export function hasTranslation(template: Template): boolean {
   return Boolean(template.translations?.es);
 }
 
+// Solo se admite Templates/<fichero> o Templates/es/<fichero>, nunca rutas fuera de Templates/.
+function readTemplateFile(relative: string): Promise<string> {
+  const dir = path.dirname(relative) === "es" ? path.join(TEMPLATES_DIR, "es") : TEMPLATES_DIR;
+  return readFile(path.join(dir, path.basename(relative)), "utf-8");
+}
+
 export async function getTemplateContent(
   template: Template,
   language: Language = "es",
 ): Promise<string> {
   const translated = language === "es" ? template.translations?.es?.filename : undefined;
-  const relative = translated ?? template.filename;
-  // Solo se admite Templates/<fichero> o Templates/es/<fichero>, nunca rutas fuera de Templates/.
-  const dir = path.dirname(relative) === "es" ? path.join(TEMPLATES_DIR, "es") : TEMPLATES_DIR;
-  return readFile(path.join(dir, path.basename(relative)), "utf-8");
+  return readTemplateFile(translated ?? template.filename);
+}
+
+export async function getCoverContent(template: Template): Promise<string | undefined> {
+  const cover = template.cover_page;
+  if (!cover) return undefined;
+  return readTemplateFile(cover.translations?.es?.filename ?? cover.filename);
 }
