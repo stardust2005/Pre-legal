@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --field: #fef3c7;
+  --field-foreground: #78350f;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --field: #422006;
+    --field-foreground: #fde68a;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Campos de las plantillas de Common Paper que se rellenarán por usuario
+   (p. ej. Purpose, Effective Date en el Mutual NDA). */
+.coverpage_link,
+.keyterms_link,
+.orderform_link,
+.sow_link,
+.businessterms_link {
+  background: var(--field);
+  color: var(--field-foreground);
+  border-radius: 0.25rem;
+  padding: 0 0.25rem;
+  font-weight: 500;
+}
+
+/* Títulos de sección y subsección numeradas dentro de las listas. */
+.header_2,
+.header_3 {
+  font-weight: 600;
+}
+
+/* Ayudas de la portada del MNDA para quien rellena el formulario. */
+.prose label {
+  display: block;
+  font-size: 0.875em;
+  opacity: 0.7;
+}
