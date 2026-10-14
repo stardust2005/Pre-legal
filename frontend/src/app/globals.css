@@ -6,6 +6,8 @@
   --foreground: #171717;
   --field: #fef3c7;
   --field-foreground: #78350f;
+  --filled: #dcfce7;
+  --filled-foreground: #14532d;
 }
 
 @theme inline {
@@ -21,6 +23,8 @@
     --foreground: #ededed;
     --field: #422006;
     --field-foreground: #fde68a;
+    --filled: #052e16;
+    --filled-foreground: #bbf7d0;
   }
 }
 
@@ -42,6 +46,16 @@ body {
   border-radius: 0.25rem;
   padding: 0 0.25rem;
   font-weight: 500;
+}
+
+/* Vista previa del formulario (PL-4): campo con valor y campo pendiente. */
+.coverpage_link.filled {
+  background: var(--filled);
+  color: var(--filled-foreground);
+}
+
+.coverpage_link.pending {
+  outline: 1px dashed currentColor;
 }
 
 /* Títulos de sección y subsección numeradas dentro de las listas. */
