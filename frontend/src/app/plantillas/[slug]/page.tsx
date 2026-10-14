@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TemplateView } from "@/components/TemplateView";
+import { DOCUMENT_LANGUAGE } from "@/lib/document-language";
 import {
   getTemplate,
   getTemplateContent,
@@ -34,15 +35,10 @@ export default async function TemplatePage({ params }: Props) {
   const template = await getTemplate(slug);
   if (!template) notFound();
 
-  const translated = hasTranslation(template);
-  const content = await getTemplateContent(template, translated ? "es" : "en");
+  // En inglés (PL-8) se muestra el original y no se enlaza la traducción, pendiente de revisar (PL-9).
+  const translated = DOCUMENT_LANGUAGE === "es" && hasTranslation(template);
+  const language = translated ? "es" : "en";
+  const content = await getTemplateContent(template, language);
 
-  return (
-    <TemplateView
-      template={template}
-      content={content}
-      language={translated ? "es" : "en"}
-      translated={translated}
-    />
-  );
+  return <TemplateView template={template} content={content} language={language} translated={translated} />;
 }
