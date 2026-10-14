@@ -99,6 +99,7 @@ Términos usados en la traducción al español de las plantillas de Common Paper
 | Training Purposes | Fines de Entrenamiento |
 | Training Restrictions | Restricciones de Entrenamiento |
 | Unlimited Claims | Reclamaciones sin Límite |
+| Use Limitations | Límites de Uso |
 | Uptime Credit | Crédito por Disponibilidad |
 | Warranty Period | Periodo de Garantía |
 
@@ -133,3 +134,37 @@ Términos usados en la traducción al español de las plantillas de Common Paper
 | Subprocessor | Subencargado |
 | Train / Training | Entrenar / Entrenamiento |
 | User(s) | Usuario(s) |
+
+## Portadas
+
+Términos propios de las portadas (*-coverpage.md) que no aparecen en las tablas anteriores.
+
+| Original | Traducción |
+|---|---|
+| Additions and Modifications | Adiciones y modificaciones |
+| AI Acceptable Use Policy | Política de uso aceptable de la IA |
+| Annex I(A) List of Parties | Anexo I(A) Lista de partes |
+| Attachments, Supplements & Modifications | Anexos, complementos y modificaciones |
+| Auto-renewal | Renovación automática |
+| Competent Supervisory Authority | Autoridad de control competente |
+| Data Exporter / Data Importer | Exportador de datos / Importador de datos |
+| Designated Record Set | Conjunto de Registros Designado |
+| DPA Covered Claim | Reclamación Cubierta del DPA |
+| DPA Liability Cap | Límite de responsabilidad del DPA |
+| Drafting note | Nota de redacción |
+| Framework Terms | Términos Marco |
+| Invoice Period | Periodicidad de facturación |
+| License Compliance Verification | Verificación del cumplimiento de la licencia |
+| Other Changes to Standard Terms | Otros cambios en los Términos Estándar |
+| Pilot / Pilot Period | Piloto / Periodo Piloto |
+| Pre-Legal note | Nota de Pre-Legal |
+| Professional Services | Servicios profesionales |
+| Publicity Rights | Derechos de publicidad |
+| Referral | Recomendación |
+| Relationship | Relación |
+| Service Provider Relationship | Relación de proveedor de servicios |
+| SOW Date | Fecha de la SOW |
+| Technical and Organizational Security Measures | Medidas de seguridad técnicas y organizativas |
+| USING THIS AGREEMENT / THE FRAMEWORK TERMS / THE ORDER FORM | CÓMO UTILIZAR ESTE CONTRATO / LOS TÉRMINOS MARCO / EL FORMULARIO DE PEDIDO |
+| [official company name] | [denominación social] |
+| [fill in …] | [indicar …] |
