@@ -1,13 +1,19 @@
 # Pre-Legal · Frontend
 
-Aplicación Next.js para consultar el catálogo de plantillas legales de Pre-Legal.
+Web de Pre-Legal: presentación de la empresa y catálogo de plantillas legales.
 
 Lee en tiempo de build el dataset de la raíz del repositorio:
 
 - `../catalog.json`: nombre, descripción y fichero de cada plantilla.
 - `../Templates/*.md`: contenido de cada plantilla (Common Paper, CC BY 4.0).
 
-Todas las páginas se generan de forma estática: `/` muestra el catálogo y `/plantillas/<slug>` el detalle de cada plantilla, donde `<slug>` es el nombre del fichero sin `.md` y en minúsculas.
+Todas las páginas se generan de forma estática:
+
+| Ruta | Página |
+|---|---|
+| `/` | Presentación de Pre-Legal. |
+| `/plantillas` | Catálogo de plantillas. |
+| `/plantillas/<slug>` | Detalle de una plantilla; `<slug>` es el nombre del fichero sin `.md` y en minúsculas. |
 
 ## Desarrollo
 
