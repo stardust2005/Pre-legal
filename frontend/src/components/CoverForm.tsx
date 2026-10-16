@@ -14,12 +14,22 @@ import {
   fillCover,
   fillStandardTermsFromCover,
   initialValues,
+  lineActive,
   missingFields,
   parseCover,
+  variantCheck,
 } from "@/lib/forms/cover";
 import type { Language } from "@/lib/document-language";
 import { draftKey, useDraft } from "@/lib/drafts";
 import { DraftNotice } from "@/components/DraftNotice";
+
+// Documento que se puede añadir al principal desde su Portada, como el SLA en el CSA (PL-11).
+export type AddOn = {
+  // Opción de la Portada (`<!-- variant -->`) que lo activa.
+  variant: string;
+  title: string;
+  standardTerms: string;
+};
 
 type Props = {
   title: string;
@@ -27,6 +37,7 @@ type Props = {
   cover: string;
   standardTerms: string;
   language: Language;
+  addOn?: AddOn;
 };
 
 const inputClass =
@@ -160,12 +171,12 @@ function FormLine({
   }
 }
 
-export function CoverForm({ title, slug, cover, standardTerms, language }: Props) {
+export function CoverForm({ title, slug, cover, standardTerms, language, addOn }: Props) {
   const model = useMemo(() => parseCover(cover, language), [cover, language]);
   const { values, setValues, saved, clear } = useDraft<CoverValues>(draftKey(slug, language), () =>
     initialValues(model),
   );
-  const [tab, setTab] = useState<"cover" | "terms">("cover");
+  const [tab, setTab] = useState<"cover" | "terms" | "addOn">("cover");
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -176,10 +187,19 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
   const setParty = (role: string, key: keyof Party, value: string) =>
     setValues((v) => ({ ...v, parties: { ...v.parties, [role]: { ...v.parties[role], [key]: value } } }));
 
+  const withAddOn = Boolean(addOn && values.checks[variantCheck(addOn.variant)]);
+  const documentTitle = withAddOn ? `${title} + ${addOn!.title}` : title;
+  const activeTab = tab === "addOn" && !withAddOn ? "cover" : tab;
+
   const filledCover = useMemo(() => fillCover(model, values), [model, values]);
+  const valueOf = useMemo(() => coverFieldValue(model, values), [model, values]);
   const filledTerms = useMemo(
-    () => fillStandardTermsFromCover(standardTerms, coverFieldValue(model, values), language),
-    [standardTerms, model, values, language],
+    () => fillStandardTermsFromCover(standardTerms, valueOf, language),
+    [standardTerms, valueOf, language],
+  );
+  const filledAddOnTerms = useMemo(
+    () => (addOn ? fillStandardTermsFromCover(addOn.standardTerms, valueOf, language) : ""),
+    [addOn, valueOf, language],
   );
   const missing = missingFields(model, values);
 
@@ -188,11 +208,16 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
     setError(null);
     try {
       const { renderCoverPdf } = await import("@/lib/pdf/cover-pdf");
-      const blob = await renderCoverPdf({ title, cover: filledCover, standardTerms, language });
+      const blob = await renderCoverPdf({
+        title: documentTitle,
+        cover: filledCover,
+        standardTerms: withAddOn ? [standardTerms, addOn!.standardTerms] : [standardTerms],
+        language,
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${slug}.pdf`;
+      a.download = withAddOn ? `${slug}-${addOn!.variant}.pdf` : `${slug}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
@@ -207,6 +232,25 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <form className="space-y-2" onSubmit={(e) => e.preventDefault()}>
         <DraftNotice saved={saved} onClear={clear} />
+
+        {addOn && (
+          <label className="flex items-start gap-3 rounded-lg border border-black/10 p-4 text-sm dark:border-white/15">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={withAddOn}
+              onChange={(e) => setCheck(variantCheck(addOn.variant), e.target.checked)}
+            />
+            <span>
+              <span className="font-medium">Incluir el {addOn.title}</span>
+              <span className="block text-xs text-foreground/60">
+                Sustituye la fila del SLA del pedido por la del {addOn.title} de Common Paper. Sus datos
+                (objetivos, créditos, periodo de suscripción…) se toman de esta Portada, y el PDF añade sus
+                Términos Estándar.
+              </span>
+            </span>
+          </label>
+        )}
 
         <fieldset className="space-y-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
           <legend className="px-1 text-sm font-semibold">Partes</legend>
@@ -233,9 +277,11 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
           ))}
         </fieldset>
 
-        {model.lines.map((line, i) => (
-          <FormLine key={i} line={line} model={model} values={values} setField={setField} setCheck={setCheck} />
-        ))}
+        {model.lines.map((line, i) =>
+          lineActive(line, values) ? (
+            <FormLine key={i} line={line} model={model} values={values} setField={setField} setCheck={setCheck} />
+          ) : null,
+        )}
 
         <div className="space-y-3 border-t border-black/10 pt-6 dark:border-white/15">
           {missing.length > 0 && (
@@ -257,20 +303,21 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
       </form>
 
       <section aria-label="Vista previa" className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
-        <div className="mb-4 flex gap-2 text-sm" role="tablist">
+        <div className="mb-4 flex flex-wrap gap-2 text-sm" role="tablist">
           {(
             [
               ["cover", "Portada"],
-              ["terms", "Términos Estándar"],
+              ["terms", withAddOn ? `Términos Estándar: ${title}` : "Términos Estándar"],
+              ...(withAddOn ? [["addOn", `Términos Estándar: ${addOn!.title}`] as const] : []),
             ] as const
           ).map(([key, label]) => (
             <button
               key={key}
               type="button"
               role="tab"
-              aria-selected={tab === key}
+              aria-selected={activeTab === key}
               onClick={() => setTab(key)}
-              className={`rounded-md px-3 py-1.5 ${tab === key ? "bg-foreground text-background" : "border border-black/15 dark:border-white/20"}`}
+              className={`rounded-md px-3 py-1.5 ${activeTab === key ? "bg-foreground text-background" : "border border-black/15 dark:border-white/20"}`}
             >
               {label}
             </button>
@@ -279,7 +326,7 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
         <article className="prose prose-sm max-w-none rounded-lg border border-black/10 p-6 dark:prose-invert dark:border-white/15">
           {/* Los valores del usuario se escapan en fillCover y fillStandardTermsFromCover. */}
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-            {tab === "cover" ? filledCover : filledTerms}
+            {activeTab === "cover" ? filledCover : activeTab === "terms" ? filledTerms : filledAddOnTerms}
           </ReactMarkdown>
         </article>
       </section>

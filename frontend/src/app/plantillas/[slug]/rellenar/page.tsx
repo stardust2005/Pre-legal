@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CoverForm } from "@/components/CoverForm";
+import { type AddOn, CoverForm } from "@/components/CoverForm";
 import { MutualNdaForm } from "@/components/MutualNdaForm";
 import { DOCUMENT_LANGUAGE } from "@/lib/document-language";
 import { fillSlugFor } from "@/lib/forms";
+import { SLA_VARIANT, csaCoverWithSla } from "@/lib/forms/csa-sla";
 import { getCoverContent, getTemplate, getTemplateContent, getTemplates } from "@/lib/templates";
 
 type Props = {
@@ -31,7 +32,17 @@ export default async function FillPage({ params }: Props) {
   if (!template || fillSlugFor(template) !== slug) notFound();
 
   const standardTerms = await getTemplateContent(template);
-  const cover = slug === "mutual-nda" ? undefined : await getCoverContent(template);
+  let cover = slug === "mutual-nda" ? undefined : await getCoverContent(template);
+
+  // El CSA puede incluir el SLA de Common Paper en su portada (PL-11).
+  let addOn: AddOn | undefined;
+  const sla = cover && slug === "csa" ? await getTemplate("sla") : undefined;
+  const slaCover = sla && (await getCoverContent(sla));
+  const combined = cover && slaCover ? csaCoverWithSla(cover, slaCover) : undefined;
+  if (sla && combined) {
+    cover = combined;
+    addOn = { variant: SLA_VARIANT, title: sla.displayName, standardTerms: await getTemplateContent(sla) };
+  }
 
   return (
     <>
@@ -55,6 +66,7 @@ export default async function FillPage({ params }: Props) {
           cover={cover}
           standardTerms={standardTerms}
           language={DOCUMENT_LANGUAGE}
+          addOn={addOn}
         />
       ) : (
         <MutualNdaForm standardTerms={standardTerms} language={DOCUMENT_LANGUAGE} />
