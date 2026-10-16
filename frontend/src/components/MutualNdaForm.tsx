@@ -12,6 +12,8 @@ import {
   missingFields,
 } from "@/lib/forms/mutual-nda";
 import type { Language } from "@/lib/document-language";
+import { draftKey, useDraft } from "@/lib/drafts";
+import { DraftNotice } from "@/components/DraftNotice";
 
 const inputClass =
   "mt-1 w-full rounded-md border border-black/15 bg-background px-3 py-2 text-sm focus:border-black/40 focus:outline-none dark:border-white/20 dark:focus:border-white/50";
@@ -90,7 +92,9 @@ function PartyFields({
 }
 
 export function MutualNdaForm({ standardTerms, language }: { standardTerms: string; language: Language }) {
-  const [values, setValues] = useState<MutualNdaValues>(() => defaultValues(language));
+  const { values, setValues, saved, clear } = useDraft<MutualNdaValues>(draftKey("mutual-nda", language), () =>
+    defaultValues(language),
+  );
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -127,6 +131,8 @@ export function MutualNdaForm({ standardTerms, language }: { standardTerms: stri
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
       <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+        <DraftNotice saved={saved} onClear={clear} />
+
         <Field label="Finalidad" help="Cómo puede utilizarse la Información Confidencial">
           <textarea
             className={inputClass}
