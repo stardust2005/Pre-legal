@@ -18,6 +18,8 @@ import {
   parseCover,
 } from "@/lib/forms/cover";
 import type { Language } from "@/lib/document-language";
+import { draftKey, useDraft } from "@/lib/drafts";
+import { DraftNotice } from "@/components/DraftNotice";
 
 type Props = {
   title: string;
@@ -160,7 +162,9 @@ function FormLine({
 
 export function CoverForm({ title, slug, cover, standardTerms, language }: Props) {
   const model = useMemo(() => parseCover(cover, language), [cover, language]);
-  const [values, setValues] = useState<CoverValues>(() => initialValues(model));
+  const { values, setValues, saved, clear } = useDraft<CoverValues>(draftKey(slug, language), () =>
+    initialValues(model),
+  );
   const [tab, setTab] = useState<"cover" | "terms">("cover");
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -202,6 +206,8 @@ export function CoverForm({ title, slug, cover, standardTerms, language }: Props
   return (
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <form className="space-y-2" onSubmit={(e) => e.preventDefault()}>
+        <DraftNotice saved={saved} onClear={clear} />
+
         <fieldset className="space-y-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
           <legend className="px-1 text-sm font-semibold">Partes</legend>
           {model.roles.map((role) => (

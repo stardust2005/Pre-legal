@@ -44,7 +44,8 @@ export default async function FillPage({ params }: Props) {
           Completa la Portada. La vista previa muestra tus datos en la Portada y dentro de los Términos
           Estándar, y el PDF descargable incluye la Portada rellenada junto con los Términos Estándar sin
           modificar. {DOCUMENT_LANGUAGE === "en" && "El documento se genera en inglés, su idioma original. "}Los datos
-          no se guardan: solo existen en tu navegador mientras usas esta página.
+          se guardan solo en tu navegador, para que puedas continuar más tarde, y puedes borrarlos cuando
+          quieras.
         </p>
       </header>
       {cover ? (
