@@ -1,4 +1,5 @@
-// PDF genérico (modelo C): Portada rellenada + Términos Estándar sin modificar.
+// PDF genérico (modelo C): Portada rellenada + Términos Estándar sin modificar
+// (varios si la Portada incorpora otro documento, como el SLA en el CSA, PL-11).
 // Se importa de forma dinámica desde el cliente, como mutual-nda-pdf.
 import { Document, Page, Text, pdf } from "@react-pdf/renderer";
 import type { Language } from "@/lib/document-language";
@@ -8,7 +9,7 @@ import { styles } from "./styles";
 type Props = {
   title: string;
   cover: string;
-  standardTerms: string;
+  standardTerms: string[];
   language: Language;
 };
 
@@ -27,10 +28,12 @@ function CoverDocument({ title, cover, standardTerms, language }: Props) {
         <MarkdownPdf markdown={cover} />
         <Footer title={title} language={language} />
       </Page>
-      <Page size="A4" style={styles.page}>
-        <MarkdownPdf markdown={standardTerms} />
-        <Footer title={title} language={language} />
-      </Page>
+      {standardTerms.map((terms, i) => (
+        <Page key={i} size="A4" style={styles.page}>
+          <MarkdownPdf markdown={terms} />
+          <Footer title={title} language={language} />
+        </Page>
+      ))}
     </Document>
   );
 }

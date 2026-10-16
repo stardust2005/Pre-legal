@@ -9,6 +9,9 @@
 //   no salen en el documento.
 // - Tabla con `[official company name]` / `[denominación social]` en la cabecera:
 //   firmas de las partes.
+// - `<!-- variant:x -->` … `<!-- /variant -->`: bloque que solo se usa si la opción `x`
+//   está activada (`variant:!x`, si no lo está). No aparece en las plantillas: lo añade
+//   Pre-Legal al combinar portadas (p. ej. CSA + SLA, PL-11).
 // Lo que depende del idioma de la portada está en COVER_LOCALES.
 
 import type { Language } from "@/lib/document-language";
@@ -30,7 +33,7 @@ export type Field = {
 
 export type PartyKey = "name" | "title" | "address";
 
-export type Line =
+export type Line = (
   | { kind: "blank" | "other" | "translation"; raw: string }
   | { kind: "heading"; raw: string; level: number; title: string }
   | { kind: "note"; raw: string; text: string }
@@ -46,13 +49,16 @@ export type Line =
       section: string;
     }
   | { kind: "sigHeader"; raw: string }
-  | { kind: "sigRow"; raw: string; label: string; key?: PartyKey };
+  | { kind: "sigRow"; raw: string; label: string; key?: PartyKey }
+) & { variant?: string };
 
 export type CoverModel = {
   language: Language;
   lines: Line[];
   fields: Record<string, Field>;
   roles: string[];
+  // Opciones que activan o desactivan bloques de la portada (véase `<!-- variant -->`).
+  variants: string[];
 };
 
 export type Party = { company: string; name: string; title: string; address: string };
@@ -82,6 +88,10 @@ type CoverLocale = {
   companyName: string;
   addressField: string;
   fallbackField: string;
+  // Frases que definen un campo de los Términos Estándar: «The Uptime Credit will be …».
+  definition: RegExp;
+  // La definición remite a la tabla que la sigue.
+  tableIntro: RegExp;
 };
 
 export const COVER_LOCALES: Record<Language, CoverLocale> = {
@@ -98,6 +108,8 @@ export const COVER_LOCALES: Record<Language, CoverLocale> = {
     companyName: "official company name",
     addressField: "Notice Address",
     fallbackField: "details",
+    definition: /^The\s+(.+?)\s+will be\s+(.+)$/,
+    tableIntro: /table below:?$/i,
   },
   es: {
     instruction: /^\s*(seleccionar|por ejemplo)/i,
@@ -112,8 +124,23 @@ export const COVER_LOCALES: Record<Language, CoverLocale> = {
     companyName: "denominación social",
     addressField: "Dirección para Notificaciones",
     fallbackField: "dato",
+    definition: /^(?:El|La|Los|Las)\s+(.+?)\s+(?:será|serán|se calculará|se calcularán)\s+(.+)$/,
+    tableIntro: /tabla siguiente:?$/i,
   },
 };
+
+const VARIANT_START = /^<!--\s*variant:(!?)([\w-]+)\s*-->\s*$/;
+const VARIANT_END = /^<!--\s*\/variant\s*-->\s*$/;
+
+export const variantCheck = (name: string) => `variant:${name}`;
+
+// Una línea dentro de un bloque `<!-- variant -->` solo cuenta si su opción lo permite.
+export function lineActive(line: Line, values: CoverValues): boolean {
+  if (!line.variant) return true;
+  const negated = line.variant.startsWith("!");
+  const on = Boolean(values.checks[variantCheck(line.variant.replace(/^!/, ""))]);
+  return negated ? !on : on;
+}
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 const hasLetters = (s: string) => /\p{L}/u.test(s);
@@ -126,7 +153,17 @@ export function parseCover(markdown: string, language: Language): CoverModel {
   let roles: string[] = [];
   let section = "";
   let inSignature = false;
-  let n = 0;
+  let variant: string | undefined;
+  const variants = new Set<string>();
+  // Los campos de un bloque opcional llevan su propio prefijo y contador, para que
+  // los identificadores del resto de la portada (y los borradores guardados) no cambien.
+  const counters = new Map<string, number>();
+  const nextId = (kind: "f" | "c") => {
+    const prefix = variant && !variant.startsWith("!") ? `${variant}-` : "";
+    const k = counters.get(prefix) ?? 0;
+    counters.set(prefix, k + 1);
+    return `${prefix}${kind}${k}`;
+  };
 
   const segment = (text: string): Segment[] => {
     const out: Segment[] = [];
@@ -137,7 +174,7 @@ export function parseCover(markdown: string, language: Language): CoverModel {
       if (isInstruction(hint)) {
         out.push({ kind: "instruction", text: hint });
       } else {
-        const id = `f${n++}`;
+        const id = nextId("f");
         const options = hint.includes("|")
           ? hint
               .replace(locale.optionsPrefix, "")
@@ -158,23 +195,30 @@ export function parseCover(markdown: string, language: Language): CoverModel {
     return out;
   };
 
+  const push = (line: Line) => lines.push(variant ? { ...line, variant } : line);
+
   for (const raw of markdown.split(/\r?\n/)) {
     let m: RegExpMatchArray | null;
-    if (/^\s*$/.test(raw)) {
-      lines.push({ kind: "blank", raw });
+    if ((m = raw.match(VARIANT_START))) {
+      variant = `${m[1]}${m[2]}`;
+      variants.add(m[2]);
+    } else if (VARIANT_END.test(raw)) {
+      variant = undefined;
+    } else if (/^\s*$/.test(raw)) {
+      push({ kind: "blank", raw });
       inSignature = false;
     } else if ((m = raw.match(/^(#{1,4})\s+(.*)$/))) {
       section = m[2].trim();
-      lines.push({ kind: "heading", raw, level: m[1].length, title: section });
+      push({ kind: "heading", raw, level: m[1].length, title: section });
     } else if (locale.translationBanner && raw.startsWith(locale.translationBanner)) {
-      lines.push({ kind: "translation", raw });
+      push({ kind: "translation", raw });
     } else if ((m = raw.match(locale.note))) {
-      lines.push({ kind: "note", raw, text: `${m[1]}: ${m[2]}` });
+      push({ kind: "note", raw, text: `${m[1]}: ${m[2]}` });
     } else if ((m = raw.match(/^<label>(.*)<\/label>\s*$/))) {
-      lines.push({ kind: "label", raw, text: m[1] });
+      push({ kind: "label", raw, text: m[1] });
     } else if ((m = raw.match(/^(\s*)- \[( |x)\]\s?(.*)$/))) {
-      const id = `c${n++}`;
-      lines.push({
+      const id = nextId("c");
+      push({
         kind: "checkbox",
         raw,
         id,
@@ -190,22 +234,22 @@ export function parseCover(markdown: string, language: Language): CoverModel {
         .filter(Boolean)
         .map((c) => capitalize(c.split(":")[0].trim()));
       inSignature = true;
-      lines.push({ kind: "sigHeader", raw });
+      push({ kind: "sigHeader", raw });
     } else if (/^\|\s*:?-{3}/.test(raw)) {
-      lines.push({ kind: "other", raw });
+      push({ kind: "other", raw });
     } else if (inSignature && raw.startsWith("|")) {
       const label = raw.split("|")[1].trim();
       const key = (Object.keys(locale.partyRows) as PartyKey[]).find((k) =>
         label.startsWith(locale.partyRows[k]),
       );
-      lines.push({ kind: "sigRow", raw, label, key });
+      push({ kind: "sigRow", raw, label, key });
     } else if (raw.startsWith(">")) {
-      lines.push({ kind: "other", raw });
+      push({ kind: "other", raw });
     } else {
-      lines.push({ kind: "text", raw, segments: segment(raw), section, table: raw.startsWith("|") });
+      push({ kind: "text", raw, segments: segment(raw), section, table: raw.startsWith("|") });
     }
   }
-  return { language, lines, fields, roles: roles.length ? roles : locale.defaultRoles };
+  return { language, lines, fields, roles: roles.length ? roles : locale.defaultRoles, variants: [...variants] };
 }
 
 export function initialValues(model: CoverModel): CoverValues {
@@ -215,6 +259,7 @@ export function initialValues(model: CoverModel): CoverValues {
   for (const l of model.lines) if (l.kind === "checkbox") checks[l.id] = l.defaultChecked;
   const parties: Record<string, Party> = {};
   for (const r of model.roles) parties[r] = { company: "", name: "", title: "", address: "" };
+  for (const v of model.variants) checks[variantCheck(v)] = false;
   return { fields, checks, parties };
 }
 
@@ -248,6 +293,7 @@ export function fillCover(model: CoverModel, values: CoverValues): string {
   const locale = COVER_LOCALES[model.language];
   const out: string[] = [];
   for (const line of model.lines) {
+    if (!lineActive(line, values)) continue;
     switch (line.kind) {
       case "note":
         break;
@@ -292,6 +338,7 @@ export function missingFields(model: CoverModel, values: CoverValues): string[] 
   const missing = new Set<string>();
   for (const line of model.lines) {
     if (line.kind !== "text" && line.kind !== "checkbox") continue;
+    if (!lineActive(line, values)) continue;
     if (line.kind === "checkbox" && !values.checks[line.id]) continue;
     for (const s of line.segments) {
       if (s.kind === "field" && !values.fields[s.id]?.trim()) missing.add(line.section || "Portada");
@@ -324,20 +371,33 @@ const plain = (md: string) =>
 
 // Valor de cada campo de los Términos Estándar según la Portada rellenada.
 export function coverFieldValue(model: CoverModel, values: CoverValues): (field: string) => string {
+  const locale = COVER_LOCALES[model.language];
+  const lines = model.lines.filter((l) => lineActive(l, values));
   const bySection = new Map<string, string[]>();
   // Líneas visibles del tipo «Campo: valor» (opciones marcadas o párrafos).
   const labelled: string[] = [];
+  // Campos definidos con una frase («The Response Time Credit will be 5% of…») o una tabla.
+  const definitions = new Map<string, string>();
   let current = "";
-  for (const line of model.lines) {
+  lines.forEach((line, i) => {
     if (line.kind === "heading") current = normalize(line.title);
     const visible =
       (line.kind === "text" && !line.table) || (line.kind === "checkbox" && values.checks[line.id]);
-    if (!visible) continue;
+    if (!visible) return;
     const text = plain(renderSegments(line.segments, model, values));
-    if (!text) continue;
+    if (!text) return;
+    const definition = line.kind === "text" ? text.match(locale.definition) : null;
+    if (definition) {
+      const [, name, rest] = definition;
+      definitions.set(
+        normalize(name),
+        locale.tableIntro.test(rest) ? tableRows(lines.slice(i + 1), model, values) : rest.replace(/\.$/, ""),
+      );
+      return;
+    }
     bySection.set(current, [...(bySection.get(current) ?? []), text]);
     if (text.includes(":")) labelled.push(text);
-  }
+  });
   const roles = new Map(model.roles.map((r) => [normalize(r), r]));
   const addressKey = normalize(COVER_LOCALES[model.language].addressField);
 
@@ -354,8 +414,25 @@ export function coverFieldValue(model: CoverModel, values: CoverValues): (field:
     const section = bySection.get(key);
     if (section?.length) return section.join(" / ");
     const item = labelled.find((t) => normalize(t.split(":")[0]) === key);
-    return item ? item.slice(item.indexOf(":") + 1).trim() : "";
+    if (item) return item.slice(item.indexOf(":") + 1).trim();
+    return definitions.get(key) ?? "";
   };
+}
+
+// Filas de la tabla que sigue a una definición, sin la cabecera: «celda: celda / …».
+function tableRows(following: Line[], model: CoverModel, values: CoverValues): string {
+  const rows: string[] = [];
+  for (const line of following) {
+    if (line.kind === "blank" && rows.length === 0) continue;
+    if (line.kind === "other" && line.raw.startsWith("|")) continue;
+    if (line.kind !== "text" || !line.table) break;
+    const cells = plain(renderSegments(line.segments, model, values))
+      .split("|")
+      .map((c) => c.trim())
+      .filter(Boolean);
+    rows.push(cells.join(": "));
+  }
+  return rows.slice(1).join(" / ");
 }
 
 const escapeHtml = (text: string) =>
